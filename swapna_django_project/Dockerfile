@@ -1,3 +1,4 @@
+# Stage 1: Python Builder
 FROM python:3
 
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -16,7 +17,22 @@ COPY . /app/
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
+# Stage 2: PostgreSQL Database
+FROM postgres:14.10
+
+ENV POSTGRES_DB=swapproject
+ENV POSTGRES_USER=swapna
+ENV POSTGRES_PASSWORD=swapna12
+
+# Stage 3: Nginx
+FROM nginx:1.19
+
+WORKDIR /etc/nginx
+
+COPY . .
+
+# Expose port 8080 to the outside world
 EXPOSE 8080
 
-# Run Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "swapna_django_project.wsgi:application"]
+# Start Nginx when the container starts
+CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
